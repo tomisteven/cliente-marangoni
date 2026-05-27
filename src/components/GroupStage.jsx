@@ -12,17 +12,17 @@ const GroupStage = ({ tournament, matches, isOrganizer, onEditMatch, onDeleteMat
     // Identify participants (players or pairs)
     matches.filter(m => m.grupo === groupName).forEach(m => {
       [1, 2].forEach(num => {
-        const participantId = isDoubles 
+        const participantId = isDoubles
           ? (m[`pareja${num}`]?.map(p => p._id || p).sort().join('-'))
           : (m[`jugador${num}`]?._id || m[`jugador${num}`]);
-        
+
         if (!participantId) return;
 
         if (!participantStats[participantId]) {
           const participantData = isDoubles ? m[`pareja${num}`] : m[`jugador${num}`];
           participantStats[participantId] = {
             id: participantId,
-            nombre: isDoubles 
+            nombre: isDoubles
               ? participantData.map(p => p.nombre).join(' + ')
               : (participantData?.nombre || '?'),
             apellido: isDoubles ? '' : (participantData?.apellido || ''),
@@ -41,10 +41,10 @@ const GroupStage = ({ tournament, matches, isOrganizer, onEditMatch, onDeleteMat
     });
 
     groupMatches.forEach(m => {
-      const p1Id = isDoubles 
+      const p1Id = isDoubles
         ? (m.pareja1?.map(p => p._id || p).sort().join('-'))
         : (m.jugador1?._id || m.jugador1);
-      const p2Id = isDoubles 
+      const p2Id = isDoubles
         ? (m.pareja2?.map(p => p._id || p).sort().join('-'))
         : (m.jugador2?._id || m.jugador2);
 
@@ -70,7 +70,7 @@ const GroupStage = ({ tournament, matches, isOrganizer, onEditMatch, onDeleteMat
       participantStats[p2Id].gc += p1Games;
 
       const winnerId = m.resultado?.ganador?._id || m.resultado?.ganador;
-      const p1IsWinner = isDoubles 
+      const p1IsWinner = isDoubles
         ? m.pareja1?.some(p => (p._id || p).toString() === winnerId?.toString())
         : p1Id?.toString() === winnerId?.toString();
 
@@ -113,10 +113,8 @@ const GroupStage = ({ tournament, matches, isOrganizer, onEditMatch, onDeleteMat
             <div className="lg:col-span-2 glass rounded-[32px] border-white/5 overflow-hidden shadow-2xl">
               <div className="bg-white/5 p-6 border-b border-white/5 flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black">
-                    {groupName}
-                  </div>
-                  <h3 className="text-xl font-black text-white uppercase tracking-wider">Grupo {groupName}</h3>
+
+                  <h3 className="text-xl font-black text-primary uppercase tracking-wider">Grupo {groupName}</h3>
                 </div>
                 <Users className="w-5 h-5 text-slate-500" />
               </div>
@@ -173,10 +171,10 @@ const GroupStage = ({ tournament, matches, isOrganizer, onEditMatch, onDeleteMat
             <div className="space-y-4">
               <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2">Partidos del Grupo</h4>
               {groupMatches.map(match => (
-                <BracketMatch 
-                  key={match._id} 
-                  match={match} 
-                  isOrganizer={isOrganizer} 
+                <BracketMatch
+                  key={match._id}
+                  match={match}
+                  isOrganizer={isOrganizer}
                   onEdit={onEditMatch}
                   onDelete={onDeleteMatch}
                 />
@@ -188,7 +186,7 @@ const GroupStage = ({ tournament, matches, isOrganizer, onEditMatch, onDeleteMat
 
       {isOrganizer && allGroupMatchesFinished && !matches.some(m => !m.grupo && m.ronda > 0) && (
         <div className="max-w-md mx-auto">
-          <button 
+          <button
             onClick={onAdvance}
             className="w-full bg-primary text-slate-950 font-black py-6 rounded-[32px] text-sm uppercase tracking-[0.2em] hover:scale-[1.02] transition-all shadow-2xl shadow-primary/20 flex items-center justify-center gap-3 group"
           >

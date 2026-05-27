@@ -41,10 +41,12 @@ const TournamentDetail = () => {
       
       // Auto-set tab if not set
       if (!activeTab) {
+        const hasGroupMatches = mRes.data.data.some(m => m.grupo);
         const hasBracket = mRes.data.data.some(m => !m.grupo);
         const isPerdedores = tRes.data.data.formato === 'eliminacion_directa_perdedores';
+        const estado = tRes.data.data.estado;
         
-        if (isPerdedores && tRes.data.data.estado === 'inscripcion') {
+        if (isPerdedores && (estado === 'inscripcion' || (estado === 'en_curso' && !hasGroupMatches))) {
           setActiveTab('zonas');
         } else if (hasBracket) {
           setActiveTab('cuadro');
@@ -114,6 +116,7 @@ const TournamentDetail = () => {
     try {
       await api.post(`/tournaments/${id}/advance`);
       await fetchData();
+      setActiveTab('cuadro'); // Switch to bracket view automatically
     } catch (error) {
       alert(error.response?.data?.message || 'Error al generar eliminatorias');
     }
@@ -453,6 +456,7 @@ const TournamentDetail = () => {
               zones={tournament.zonas}
               inscriptions={tournament.inscripciones}
               onUpdate={fetchData}
+              disciplina={tournament.disciplina}
             />
           ) : ['borrador', 'inscripcion'].includes(tournament.estado) && activeTab !== 'zonas' ? (
             <div className="h-full flex flex-col items-center justify-center text-center py-20 opacity-30">
