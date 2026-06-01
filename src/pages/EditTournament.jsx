@@ -11,7 +11,7 @@ const EditTournament = () => {
   const [formData, setFormData] = useState({
     nombre: '',
     disciplina: 'padel',
-    formato: 'eliminacion_directa',
+    formato: 'grupos_+_eliminacion',
     maxJugadores: 16,
     minJugadores: 4,
     fechaInicio: '',
@@ -39,7 +39,7 @@ const EditTournament = () => {
         setFormData({
           nombre: t.nombre || '',
           disciplina: t.disciplina || 'padel',
-          formato: t.formato || 'eliminacion_directa',
+          formato: t.formato || 'grupos_+_eliminacion',
           maxJugadores: t.maxJugadores || 16,
           minJugadores: t.minJugadores || 4,
           fechaInicio: t.fechaInicio ? t.fechaInicio.split('T')[0] : '',
@@ -129,12 +129,9 @@ const EditTournament = () => {
                 value={formData.formato}
                 onChange={(e) => setFormData({...formData, formato: e.target.value})}
               >
-                <option value="eliminacion_directa">Eliminación Directa</option>
-                <option value="eliminacion_directa_perdedores">Eliminación Directa + Perdedores</option>
-                <option value="round_robin">Round Robin (Liga)</option>
                 <option value="grupos_+_eliminacion">Grupos + Eliminación</option>
-                <option value="americano">Americano (Mexicano)</option>
-                <option value="manual">Manual (Libre)</option>
+                <option value="eliminacion_directa_perdedores">Eliminación Directa + Perdedores</option>
+                <option value="grupos_1y2_eliminacion">Zona de grupos + 1º y 2º + eliminación directa</option>
               </select>
             </div>
 

@@ -1,13 +1,65 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
-import { Trophy, Calendar, Users, Settings, Plus, Loader2 } from 'lucide-react';
+import { Trophy, Calendar, Users, Settings, Plus, Loader2, Info, CheckCircle2, Layers, Swords } from 'lucide-react';
+
+const FORMAT_INFO = {
+  'grupos_+_eliminacion': {
+    titulo: 'Grupos + Eliminación Directa',
+    emoji: '🏆',
+    color: 'primary',
+    descripcion: 'El formato más utilizado en torneos profesionales (Copa del Mundo, ATP, etc.). Combina una fase de grupos justa con una eliminación directa emocionante.',
+    fases: [
+      { icon: '📋', label: 'Fase de Grupos', desc: 'Todos juegan contra todos dentro de su grupo (round robin). Los mejores clasifican.' },
+      { icon: '⚔️', label: 'Eliminación Directa', desc: 'Los clasificados se enfrentan en bracket. Quien pierde queda afuera hasta el campeón.' },
+    ],
+    stats: [
+      { label: 'Partidos mínimos por jugador', value: '3+' },
+      { label: 'Grupos (16 jugadores)', value: '4 grupos de 4' },
+      { label: 'Total partidos aprox.', value: '~31' },
+    ]
+  },
+  'eliminacion_directa_perdedores': {
+    titulo: 'Grupos + Eliminación Directa + Perdedores',
+    emoji: '🎾',
+    color: 'secondary',
+    descripcion: 'El formato más justo del circuito. Nadie queda eliminado tras una sola derrota: hay dos cuadros activos y dos campeones al final.',
+    fases: [
+      { icon: '📋', label: 'Fase de Grupos (Zonas)', desc: 'El organizador arma las zonas manualmente. Todos juegan contra todos dentro de su zona.' },
+      { icon: '🥇', label: 'Cuadro Principal', desc: 'Los 2 mejores de cada zona compiten por el título absoluto.' },
+      { icon: '🥈', label: 'Cuadro de Perdedores', desc: 'Los eliminados en grupos tienen una segunda oportunidad de ganar su propio cuadro.' },
+    ],
+    stats: [
+      { label: 'Partidos mínimos por jugador', value: '4-6' },
+      { label: 'Total partidos aprox. (16 jug.)', value: '~38' },
+      { label: 'Campeones al final', value: '2 (principal + perdedores)' },
+    ]
+  },
+  'grupos_1y2_eliminacion': {
+    titulo: 'Zona de grupos + 1º y 2º + eliminación directa',
+    emoji: '🔥',
+    color: 'purple',
+    descripcion: 'Formato competitivo donde el sembrado de la llave de eliminación es estricto: los mejores (1º) juegan contra otros líderes de zona, y los segundos (2º) entre sí.',
+    fases: [
+      { icon: '📋', label: 'Fase de Grupos (Zonas)', desc: 'Zonas armadas de forma manual. Clasifican los 2 mejores de cada una.' },
+      { icon: '🥇', label: 'Cruces de Líderes', desc: 'Los primeros (1º) se enfrentan entre sí en su mitad de la llave.' },
+      { icon: '🥈', label: 'Cruces de Segundos', desc: 'Los segundos (2º) se enfrentan entre sí en la otra mitad de la llave.' },
+      { icon: '🏆', label: 'Gran Final', desc: 'El mejor del cuadro de primeros se enfrenta al mejor del cuadro de segundos por la gloria.' }
+    ],
+    stats: [
+      { label: 'Partidos mínimos por jugador', value: '3-4' },
+      { label: 'Cruces de Eliminación', value: '1º vs 1º y 2º vs 2º' },
+      { label: 'Total partidos aprox. (16 jug.)', value: '~31' }
+    ]
+  }
+};
+
 
 const CreateTournament = () => {
   const [formData, setFormData] = useState({
     nombre: '',
     disciplina: 'padel',
-    formato: 'eliminacion_directa',
+    formato: 'grupos_+_eliminacion',
     maxJugadores: 16,
     minJugadores: 4,
     fechaInicio: '',
@@ -60,7 +112,7 @@ const CreateTournament = () => {
                 className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                 placeholder="Open Primavera 2026"
                 value={formData.nombre}
-                onChange={(e) => setFormData({...formData, nombre: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
               />
             </div>
 
@@ -69,7 +121,7 @@ const CreateTournament = () => {
               <select
                 className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                 value={formData.disciplina}
-                onChange={(e) => setFormData({...formData, disciplina: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, disciplina: e.target.value })}
               >
                 <option value="padel">Pádel</option>
                 <option value="tenis">Tenis</option>
@@ -81,16 +133,58 @@ const CreateTournament = () => {
               <select
                 className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                 value={formData.formato}
-                onChange={(e) => setFormData({...formData, formato: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, formato: e.target.value })}
               >
-                <option value="eliminacion_directa">Eliminación Directa</option>
-                <option value="eliminacion_directa_perdedores">Eliminación Directa + Perdedores (Tenis)</option>
-                <option value="round_robin">Round Robin (Liga)</option>
-                <option value="grupos_+_eliminacion">Grupos + Eliminación</option>
-                <option value="americano">Americano (Mexicano)</option>
-                <option value="manual">Manual (Libre)</option>
+                <option value="grupos_+_eliminacion">Grupos + Eliminación Directa</option>
+                <option value="eliminacion_directa_perdedores">Grupos + Eliminación Directa + Perdedores</option>
+                <option value="grupos_1y2_eliminacion">Zona de grupos + 1º y 2º + eliminación directa</option>
               </select>
             </div>
+
+            {/* Format Description Card */}
+            {FORMAT_INFO[formData.formato] && (() => {
+              const info = FORMAT_INFO[formData.formato];
+              const isSecondary = info.color === 'secondary';
+              const isPurple = info.color === 'purple';
+              const colorClass = isSecondary ? 'text-secondary' : isPurple ? 'text-purple-400' : 'text-primary';
+              return (
+                <div className={`col-span-full rounded-2xl border p-5 transition-all duration-300 animate-in fade-in slide-in-from-top-2 ${isSecondary
+                  ? 'bg-secondary/5 border-secondary/20'
+                  : isPurple ? 'bg-purple-500/5 border-purple-500/20' : 'bg-primary/5 border-primary/20'
+                  }`}>
+                  <div className="flex items-start gap-4">
+                    <span className="text-2xl mt-0.5">{info.emoji}</span>
+                    <div className="flex-1 space-y-4">
+                      <div>
+                        <h4 className={`font-black text-sm uppercase tracking-wider ${colorClass}`}>{info.titulo}</h4>
+                        <p className="text-slate-400 text-xs mt-1 leading-relaxed">{info.descripcion}</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        {info.stats.map((s, i) => (
+                          <div key={i} className="bg-white/5 rounded-xl px-4 py-3">
+                            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black">{s.label}</p>
+                            <p className={`text-lg font-black mt-0.5 ${colorClass}`}>{s.value}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="space-y-2">
+                        {info.fases.map((f, i) => (
+                          <div key={i} className="flex items-start gap-3">
+                            <span className="text-base leading-none mt-0.5">{f.icon}</span>
+                            <div>
+                              <span className="text-xs font-black text-white">{f.label}: </span>
+                              <span className="text-xs text-slate-400">{f.desc}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">Máx. Jugadores</label>
@@ -99,7 +193,7 @@ const CreateTournament = () => {
                 required
                 className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                 value={formData.maxJugadores}
-                onChange={(e) => setFormData({...formData, maxJugadores: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, maxJugadores: e.target.value })}
               />
             </div>
 
@@ -109,7 +203,7 @@ const CreateTournament = () => {
                 className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                 placeholder="2da / 3ra / Open"
                 value={formData.categoria}
-                onChange={(e) => setFormData({...formData, categoria: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
               />
             </div>
           </div>
@@ -122,7 +216,7 @@ const CreateTournament = () => {
                 required
                 className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                 value={formData.fechaInicio}
-                onChange={(e) => setFormData({...formData, fechaInicio: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, fechaInicio: e.target.value })}
               />
             </div>
             <div>
@@ -132,7 +226,7 @@ const CreateTournament = () => {
                 required
                 className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                 value={formData.fechaLimiteInscripcion}
-                onChange={(e) => setFormData({...formData, fechaLimiteInscripcion: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, fechaLimiteInscripcion: e.target.value })}
               />
             </div>
           </div>
@@ -148,7 +242,7 @@ const CreateTournament = () => {
                   type="number"
                   className="w-full bg-slate-950 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-primary transition-all"
                   value={formData.puntosConfig.partidoGanadoGrupo}
-                  onChange={(e) => setFormData({...formData, puntosConfig: {...formData.puntosConfig, partidoGanadoGrupo: parseInt(e.target.value) || 0}})}
+                  onChange={(e) => setFormData({ ...formData, puntosConfig: { ...formData.puntosConfig, partidoGanadoGrupo: parseInt(e.target.value) || 0 } })}
                 />
               </div>
               <div>
@@ -157,7 +251,7 @@ const CreateTournament = () => {
                   type="number"
                   className="w-full bg-slate-950 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-primary transition-all"
                   value={formData.puntosConfig.partidoPerdidoGrupo}
-                  onChange={(e) => setFormData({...formData, puntosConfig: {...formData.puntosConfig, partidoPerdidoGrupo: parseInt(e.target.value) || 0}})}
+                  onChange={(e) => setFormData({ ...formData, puntosConfig: { ...formData.puntosConfig, partidoPerdidoGrupo: parseInt(e.target.value) || 0 } })}
                 />
               </div>
               <div>
@@ -166,7 +260,7 @@ const CreateTournament = () => {
                   type="number"
                   className="w-full bg-slate-950 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-primary transition-all"
                   value={formData.puntosConfig.llegarCuartos}
-                  onChange={(e) => setFormData({...formData, puntosConfig: {...formData.puntosConfig, llegarCuartos: parseInt(e.target.value) || 0}})}
+                  onChange={(e) => setFormData({ ...formData, puntosConfig: { ...formData.puntosConfig, llegarCuartos: parseInt(e.target.value) || 0 } })}
                 />
               </div>
               <div>
@@ -175,7 +269,7 @@ const CreateTournament = () => {
                   type="number"
                   className="w-full bg-slate-950 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-primary transition-all"
                   value={formData.puntosConfig.llegarSemis}
-                  onChange={(e) => setFormData({...formData, puntosConfig: {...formData.puntosConfig, llegarSemis: parseInt(e.target.value) || 0}})}
+                  onChange={(e) => setFormData({ ...formData, puntosConfig: { ...formData.puntosConfig, llegarSemis: parseInt(e.target.value) || 0 } })}
                 />
               </div>
               <div>
@@ -184,7 +278,7 @@ const CreateTournament = () => {
                   type="number"
                   className="w-full bg-slate-950 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-primary transition-all"
                   value={formData.puntosConfig.llegarFinal}
-                  onChange={(e) => setFormData({...formData, puntosConfig: {...formData.puntosConfig, llegarFinal: parseInt(e.target.value) || 0}})}
+                  onChange={(e) => setFormData({ ...formData, puntosConfig: { ...formData.puntosConfig, llegarFinal: parseInt(e.target.value) || 0 } })}
                 />
               </div>
               <div>
@@ -193,7 +287,7 @@ const CreateTournament = () => {
                   type="number"
                   className="w-full bg-slate-950 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-primary transition-all"
                   value={formData.puntosConfig.campeon}
-                  onChange={(e) => setFormData({...formData, puntosConfig: {...formData.puntosConfig, campeon: parseInt(e.target.value) || 0}})}
+                  onChange={(e) => setFormData({ ...formData, puntosConfig: { ...formData.puntosConfig, campeon: parseInt(e.target.value) || 0 } })}
                 />
               </div>
               <div>
@@ -202,7 +296,7 @@ const CreateTournament = () => {
                   type="number"
                   className="w-full bg-slate-950 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-primary transition-all"
                   value={formData.puntosConfig.campeonPerdedores}
-                  onChange={(e) => setFormData({...formData, puntosConfig: {...formData.puntosConfig, campeonPerdedores: parseInt(e.target.value) || 0}})}
+                  onChange={(e) => setFormData({ ...formData, puntosConfig: { ...formData.puntosConfig, campeonPerdedores: parseInt(e.target.value) || 0 } })}
                 />
               </div>
               <div>
@@ -211,7 +305,7 @@ const CreateTournament = () => {
                   type="number"
                   className="w-full bg-slate-950 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-primary transition-all"
                   value={formData.puntosConfig.finalistaPerdedores}
-                  onChange={(e) => setFormData({...formData, puntosConfig: {...formData.puntosConfig, finalistaPerdedores: parseInt(e.target.value) || 0}})}
+                  onChange={(e) => setFormData({ ...formData, puntosConfig: { ...formData.puntosConfig, finalistaPerdedores: parseInt(e.target.value) || 0 } })}
                 />
               </div>
             </div>
@@ -224,7 +318,7 @@ const CreateTournament = () => {
               className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
               placeholder="Detalles sobre el torneo, premios para ganadores, etc."
               value={formData.descripcion}
-              onChange={(e) => setFormData({...formData, descripcion: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
             ></textarea>
           </div>
         </div>

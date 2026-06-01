@@ -43,10 +43,10 @@ const TournamentDetail = () => {
       if (!activeTab) {
         const hasGroupMatches = mRes.data.data.some(m => m.grupo);
         const hasBracket = mRes.data.data.some(m => !m.grupo);
-        const isPerdedores = tRes.data.data.formato === 'eliminacion_directa_perdedores';
+        const isManualZones = ['eliminacion_directa_perdedores', 'grupos_1y2_eliminacion'].includes(tRes.data.data.formato);
         const estado = tRes.data.data.estado;
         
-        if (isPerdedores && (estado === 'inscripcion' || (estado === 'en_curso' && !hasGroupMatches))) {
+        if (isManualZones && (estado === 'inscripcion' || (estado === 'en_curso' && !hasGroupMatches))) {
           setActiveTab('zonas');
         } else if (hasBracket) {
           setActiveTab('cuadro');
@@ -376,7 +376,7 @@ const TournamentDetail = () => {
             <h2 className="text-2xl font-black text-white">Competencia</h2>
             
             <div className="flex bg-slate-900/80 p-1 rounded-2xl border border-white/10">
-              {isOrganizer && tournament.formato === 'eliminacion_directa_perdedores' && (
+              {isOrganizer && ['eliminacion_directa_perdedores', 'grupos_1y2_eliminacion'].includes(tournament.formato) && (
                 <button 
                   onClick={() => setActiveTab('zonas')}
                   className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'zonas' ? 'bg-primary text-slate-950 shadow-lg' : 'text-slate-400 hover:text-white'}`}
