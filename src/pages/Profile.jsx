@@ -9,8 +9,9 @@ const Profile = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { user: currentUser } = useAuth();
-  const profileId = id || currentUser?._id;
-  const isOwnProfile = !id || id === currentUser?._id;
+  const currentUserId = currentUser?._id || currentUser?.id;
+  const profileId = id || currentUserId;
+  const isOwnProfile = !id || id === currentUserId;
   
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -45,6 +46,10 @@ const Profile = () => {
       try {
         const { data } = await api.get(`/stats/player/${profileId}`);
         setStats(data.data);
+        // Auto-select first discipline the player has
+        if (data.data.jugadorId?.disciplinas?.length > 0) {
+          setDisciplina(data.data.jugadorId.disciplinas[0]);
+        }
         setEditForm({
           nombre: data.data.jugadorId.nombre || '',
           apellido: data.data.jugadorId.apellido || '',
@@ -265,14 +270,16 @@ const Profile = () => {
           <div className="glass p-8 rounded-3xl border-white/5">
             <div className="flex justify-between items-center mb-8">
               <h3 className="text-xl font-bold text-white">Mis Partidos</h3>
-              <span className="text-xs font-black text-slate-500 uppercase tracking-widest">{matches.length} partidos totales</span>
+              <span className="text-xs font-black text-slate-500 uppercase tracking-widest">
+                {matches.filter(m => m.torneoId?.disciplina === disciplina).length} partidos
+              </span>
             </div>
             
             <div className="space-y-4">
               {matchesLoading ? (
                 <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
-              ) : matches.length > 0 ? (
-                matches.map(m => {
+              ) : matches.filter(m => m.torneoId?.disciplina === disciplina).length > 0 ? (
+                matches.filter(m => m.torneoId?.disciplina === disciplina).map(m => {
                   const isPadel = m.torneoId?.disciplina === 'padel';
                   const p1Name = isPadel ? m.pareja1?.map(p => p.nombre).join(' + ') : m.jugador1?.nombre;
                   const p2Name = isPadel ? m.pareja2?.map(p => p.nombre).join(' + ') : m.jugador2?.nombre;
@@ -333,7 +340,7 @@ const Profile = () => {
         <div className="glass p-8 rounded-3xl border-white/5 space-y-8 h-fit sticky top-8">
           <h3 className="text-xl font-bold text-white">Historial Cara a Cara</h3>
           <div className="space-y-4">
-            {stats.historialVsJugadores.slice(0, 8).map(h => (
+            {stats.historialVsJugadores.filter(h => !h.disciplina || h.disciplina === disciplina).slice(0, 8).map(h => (
               <div key={h.rivalId._id} className="flex items-center justify-between p-4 rounded-2xl bg-slate-900/50 border border-slate-800 hover:border-primary/20 transition-all">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center text-slate-500 overflow-hidden">
@@ -347,7 +354,7 @@ const Profile = () => {
                 </div>
               </div>
             ))}
-            {stats.historialVsJugadores.length === 0 && (
+            {stats.historialVsJugadores.filter(h => !h.disciplina || h.disciplina === disciplina).length === 0 && (
               <p className="text-slate-500 text-sm text-center py-8 italic">Sin partidos registrados aún.</p>
             )}
           </div>

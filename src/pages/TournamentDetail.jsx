@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
-import { Calendar, Users, Trophy, ChevronLeft, ShieldCheck, Play, User, Settings, ExternalLink, Trash2, UserPlus, ChevronRight, Search, Check, Loader2, LayoutGrid, Award, X, Maximize, Minimize } from 'lucide-react';
+import { Calendar, Users, Trophy, ChevronLeft, ShieldCheck, Play, User, Settings, ExternalLink, Trash2, UserPlus, ChevronRight, Search, Check, Loader2, LayoutGrid, Award, X, Maximize, Minimize, Copy } from 'lucide-react';
 import BracketMatch from '../components/BracketMatch';
 import AdminEnrollment from '../components/AdminEnrollment';
 import AdminZones from '../components/AdminZones';
@@ -25,6 +25,17 @@ const TournamentDetail = () => {
   const [users, setUsers] = useState([]);
   const [partnerSearch, setPartnerSearch] = useState('');
   const [selectedPartner, setSelectedPartner] = useState(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyLink = () => {
+    const url = `${window.location.origin}/tournaments/${id}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(err => {
+      console.error('Error al copiar el enlace', err);
+    });
+  };
 
   useEffect(() => {
     fetchData();
@@ -47,14 +58,20 @@ const TournamentDetail = () => {
         const isDirectElim = tRes.data.data.formato === 'eliminacion_directa';
         const estado = tRes.data.data.estado;
         
+        const userId = user?._id || user?.id;
+        const userIsOrganizer = ['administrador', 'organizador', 'profesor'].includes(user?.rol) && 
+          (user?.rol === 'administrador' || (tRes.data.data.organizadorId?._id || tRes.data.data.organizadorId) === userId);
+
         if (isDirectElim) {
           setActiveTab('cuadro');
-        } else if (isManualZones && (estado === 'inscripcion' || (estado === 'en_curso' && !hasGroupMatches))) {
+        } else if (userIsOrganizer && isManualZones && (estado === 'inscripcion' || (estado === 'en_curso' && !hasGroupMatches))) {
           setActiveTab('zonas');
+        } else if (hasGroupMatches) {
+          setActiveTab('grupos');
         } else if (hasBracket) {
           setActiveTab('cuadro');
         } else {
-          setActiveTab('grupos');
+          setActiveTab(tRes.data.data.formato.includes('grupos') ? 'grupos' : 'cuadro');
         }
       }
     } catch (error) {
@@ -169,10 +186,14 @@ const TournamentDetail = () => {
   if (loading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary"></div></div>;
   if (!tournament) return <div className="text-center py-24">Torneo no encontrado</div>;
 
-  const isEnrolled = tournament.inscripciones?.some(i => 
-    i.jugador1?._id === user.id || (i.jugador2 && i.jugador2?._id === user.id)
-  );
-  const isOrganizer = tournament.organizadorId._id === user.id || user.rol === 'administrador';
+  const userId = user?._id || user?.id;
+  const isEnrolled = tournament.inscripciones?.some(i => {
+    const j1Id = i.jugador1?._id || i.jugador1;
+    const j2Id = i.jugador2?._id || i.jugador2;
+    return j1Id === userId || j2Id === userId;
+  });
+  const isOrganizer = ['administrador', 'organizador', 'profesor'].includes(user?.rol) && 
+    (user?.rol === 'administrador' || (tournament.organizadorId?._id || tournament.organizadorId) === userId);
   const handleDeleteMatch = async (matchId) => {
     try {
       await api.delete(`/matches/${matchId}`);
@@ -200,6 +221,23 @@ const TournamentDetail = () => {
           <div className="px-4 py-1.5 bg-slate-800 rounded-full text-xs font-bold text-slate-300 uppercase tracking-widest">
             {tournament.estado.replace('_', ' ')}
           </div>
+          <button 
+            onClick={handleCopyLink}
+            className="flex items-center gap-2 px-4 py-1.5 bg-slate-900/80 text-slate-300 rounded-full border border-white/5 hover:border-primary/50 hover:bg-slate-800 transition-all text-xs font-bold shadow-lg"
+            title="Copiar Link del Torneo"
+          >
+            {copied ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-green-400" />
+                <span className="text-green-400">¡Copiado!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3.5 h-3.5" />
+                <span>Copiar Link</span>
+              </>
+            )}
+          </button>
           {isOrganizer && (
             <div className="flex items-center gap-2">
               <button 
@@ -387,7 +425,7 @@ const TournamentDetail = () => {
                   <LayoutGrid className="w-3.5 h-3.5" /> Zonas
                 </button>
               )}
-              {(matches.some(m => m.grupo) || activeTab === 'zonas') && (
+              {(tournament.formato !== 'eliminacion_directa' || matches.some(m => m.grupo)) && (
                 <button 
                   onClick={() => setActiveTab('grupos')}
                   className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'grupos' ? 'bg-primary text-slate-950 shadow-lg' : 'text-slate-400 hover:text-white'}`}
@@ -395,7 +433,7 @@ const TournamentDetail = () => {
                   <Users className="w-3.5 h-3.5" /> Fase de Grupos
                 </button>
               )}
-              {(matches.some(m => !m.grupo) || tournament.estado === 'en_curso') && (
+              {(tournament.formato === 'eliminacion_directa' || matches.some(m => !m.grupo) || tournament.estado === 'en_curso' || tournament.estado === 'finalizado') && (
                 <button 
                   onClick={() => setActiveTab('cuadro')}
                   className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'cuadro' ? 'bg-primary text-slate-950 shadow-lg' : 'text-slate-400 hover:text-white'}`}
@@ -453,7 +491,7 @@ const TournamentDetail = () => {
         )}
 
         <div className="flex-grow overflow-x-auto p-12 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-900/50 to-transparent">
-          {activeTab === 'zonas' ? (
+          {activeTab === 'zonas' && isOrganizer ? (
             <AdminZones 
               tournamentId={id}
               zones={tournament.zonas}
@@ -461,7 +499,7 @@ const TournamentDetail = () => {
               onUpdate={fetchData}
               disciplina={tournament.disciplina}
             />
-          ) : ['borrador', 'inscripcion'].includes(tournament.estado) && activeTab !== 'zonas' ? (
+          ) : ['borrador', 'inscripcion'].includes(tournament.estado) ? (
             <div className="h-full flex flex-col items-center justify-center text-center py-20 opacity-30">
               <Trophy className="w-24 h-24 mb-6" />
               <p className="text-xl font-bold uppercase tracking-widest">El cuadro se generará al iniciar el torneo</p>
@@ -559,7 +597,7 @@ const TournamentDetail = () => {
               <div className="max-h-[300px] overflow-y-auto custom-scrollbar space-y-2">
                 {users
                   .filter(u => 
-                    u._id !== user.id && 
+                    u._id !== userId && 
                     !enrolledIds.includes(u._id) &&
                     (u.nombre.toLowerCase().includes(partnerSearch.toLowerCase()) || u.email.toLowerCase().includes(partnerSearch.toLowerCase()))
                   )

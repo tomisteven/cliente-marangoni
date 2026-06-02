@@ -139,7 +139,7 @@ const CreateTournament = () => {
                 value={formData.disciplina}
                 onChange={(e) => setFormData({ ...formData, disciplina: e.target.value })}
               >
-                <option value="padel">Pádel</option>
+                {/* <option value="padel">Pádel</option> */}
                 <option value="tenis">Tenis</option>
               </select>
             </div>

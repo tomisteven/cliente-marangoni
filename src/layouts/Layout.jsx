@@ -20,7 +20,7 @@ const Layout = ({ children }) => {
           <div className="flex justify-between h-16 items-center">
             <Link to="/" className="flex items-center gap-2 font-bold text-xl text-primary">
               <Trophy className="w-8 h-8" />
-              <span className="hidden sm:inline">Marangoni Torneos</span>
+              <span className="hidden sm:inline">Torneo Facil</span>
             </Link>
 
             {user ? (

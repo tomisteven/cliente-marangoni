@@ -18,7 +18,8 @@ const AdminPlayers = () => {
     rol: '',
     categoria: '',
     puntosPadel: 0,
-    puntosTenis: 0
+    puntosTenis: 0,
+    password: ''
   });
 
   useEffect(() => {
@@ -50,7 +51,8 @@ const AdminPlayers = () => {
       rol: user.rol,
       categoria: user.categoria || '',
       puntosPadel: user.rankingPoints?.padel || 0,
-      puntosTenis: user.rankingPoints?.tenis || 0
+      puntosTenis: user.rankingPoints?.tenis || 0,
+      password: ''
     });
     setIsEditModalOpen(true);
   };
@@ -59,8 +61,8 @@ const AdminPlayers = () => {
     e.preventDefault();
     setUpdating(true);
     try {
-      // 1. Update basic and personal data
-      await api.put(`/auth/update/${selectedUser._id}`, {
+      // 1. Update basic and personal data (including password if filled)
+      const updatePayload = {
         nombre: editForm.nombre,
         apellido: editForm.apellido,
         email: editForm.email,
@@ -71,7 +73,13 @@ const AdminPlayers = () => {
         domicilio: editForm.domicilio,
         rol: editForm.rol,
         categoria: editForm.categoria
-      });
+      };
+
+      if (editForm.password && editForm.password.trim() !== '') {
+        updatePayload.password = editForm.password;
+      }
+
+      await api.put(`/auth/update/${selectedUser._id}`, updatePayload);
 
       // 2. Update ranking points if changed
       if (editForm.puntosPadel !== selectedUser.rankingPoints?.padel) {
@@ -287,6 +295,10 @@ const AdminPlayers = () => {
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-slate-500 ml-2">Email</label>
                   <input type="email" className="w-full bg-slate-950 border border-white/5 rounded-xl px-4 py-3 text-white text-sm" value={editForm.email} onChange={e => setEditForm({...editForm, email: e.target.value})} />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 ml-2">Nueva Contraseña (dejar vacío para mantener la actual)</label>
+                  <input type="password" placeholder="••••••••" className="w-full bg-slate-950 border border-white/5 rounded-xl px-4 py-3 text-white text-sm" value={editForm.password || ''} onChange={e => setEditForm({...editForm, password: e.target.value})} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">

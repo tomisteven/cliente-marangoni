@@ -1,7 +1,46 @@
 import { useState, useEffect } from 'react';
 import api from '../api/axios';
-import { Users, Trophy, Activity, Shield, LayoutGrid } from 'lucide-react';
+import { Users, Trophy, Activity, Shield, LayoutGrid, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
 import AdminPlayers from '../components/AdminPlayers';
+
+const RebuildStatsButton = () => {
+  const [status, setStatus] = useState('idle'); // idle | loading | success | error
+  const [message, setMessage] = useState('');
+
+  const handleRebuild = async () => {
+    if (!window.confirm('¿Estás seguro? Esto borrará y reconstruirá todas las estadísticas y el ranking desde cero a partir de los partidos existentes.')) return;
+    setStatus('loading');
+    setMessage('');
+    try {
+      const { data } = await api.post('/stats/rebuild');
+      setStatus('success');
+      setMessage(data.message);
+    } catch (err) {
+      setStatus('error');
+      setMessage(err.response?.data?.message || 'Error al recalcular.');
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-end gap-2 flex-shrink-0">
+      <button
+        onClick={handleRebuild}
+        disabled={status === 'loading'}
+        className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-400 font-black text-sm hover:bg-orange-500/20 transition-all disabled:opacity-50"
+      >
+        <RefreshCw className={`w-4 h-4 ${status === 'loading' ? 'animate-spin' : ''}`} />
+        {status === 'loading' ? 'Procesando...' : 'Recalcular'}
+      </button>
+      {status === 'success' && (
+        <p className="text-green-400 text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> {message}</p>
+      )}
+      {status === 'error' && (
+        <p className="text-red-400 text-xs flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {message}</p>
+      )}
+    </div>
+  );
+};
+
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({ users: 0, tournaments: 0, matches: 0 });
@@ -96,6 +135,17 @@ const AdminDashboard = () => {
             <p className="text-slate-400 max-w-lg mx-auto">
               Utiliza las pestañas superiores para navegar entre los distintos módulos de gestión. Puedes ver la lista completa de jugadores, darlos de baja o revisar sus perfiles individuales.
             </p>
+          </div>
+
+          {/* Rebuild Stats */}
+          <div className="glass p-8 rounded-[40px] border-white/5 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div>
+              <h3 className="text-xl font-black text-white mb-1">Recalcular Estadísticas y Ranking</h3>
+              <p className="text-slate-400 text-sm">
+                Reconstruye todos los datos de estadísticas y ranking desde cero, basándose en los partidos registrados en el sistema. Úsalo si los datos se ven desincronizados.
+              </p>
+            </div>
+            <RebuildStatsButton />
           </div>
         </>
       ) : (
