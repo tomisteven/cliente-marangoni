@@ -51,6 +51,22 @@ const FORMAT_INFO = {
       { label: 'Cruces de Eliminación', value: '1º vs 1º y 2º vs 2º' },
       { label: 'Total partidos aprox. (16 jug.)', value: '~31' }
     ]
+  },
+  'eliminacion_directa': {
+    titulo: 'Eliminación Directa',
+    emoji: '⚡',
+    color: 'orange',
+    descripcion: 'El formato más rápido y directo. El organizador arma manualmente los cruces de la primera ronda y desde ahí es eliminación directa pura: quien pierde, queda afuera.',
+    fases: [
+      { icon: '✏️', label: 'Armado Manual de Cruces', desc: 'El organizador decide quién juega contra quién en la primera ronda (8vos o cuartos).' },
+      { icon: '⚔️', label: 'Eliminación Directa', desc: 'Desde la primera ronda, quien pierde queda eliminado. El ganador avanza hasta la final.' },
+      { icon: '🏆', label: 'Gran Final', desc: 'Los dos últimos en pie se enfrentan por el título.' }
+    ],
+    stats: [
+      { label: 'Partidos por jugador (mín)', value: '1' },
+      { label: 'Primera ronda', value: '8vos o Cuartos' },
+      { label: 'Total partidos aprox. (16 jug.)', value: '15' }
+    ]
   }
 };
 
@@ -138,6 +154,7 @@ const CreateTournament = () => {
                 <option value="grupos_+_eliminacion">Grupos + Eliminación Directa</option>
                 <option value="eliminacion_directa_perdedores">Grupos + Eliminación Directa + Perdedores</option>
                 <option value="grupos_1y2_eliminacion">Zona de grupos + 1º y 2º + eliminación directa</option>
+                <option value="eliminacion_directa">Eliminación Directa (Cruces manuales)</option>
               </select>
             </div>
 
@@ -146,11 +163,12 @@ const CreateTournament = () => {
               const info = FORMAT_INFO[formData.formato];
               const isSecondary = info.color === 'secondary';
               const isPurple = info.color === 'purple';
-              const colorClass = isSecondary ? 'text-secondary' : isPurple ? 'text-purple-400' : 'text-primary';
+              const isOrange = info.color === 'orange';
+              const colorClass = isSecondary ? 'text-secondary' : isPurple ? 'text-purple-400' : isOrange ? 'text-orange-400' : 'text-primary';
               return (
                 <div className={`col-span-full rounded-2xl border p-5 transition-all duration-300 animate-in fade-in slide-in-from-top-2 ${isSecondary
                   ? 'bg-secondary/5 border-secondary/20'
-                  : isPurple ? 'bg-purple-500/5 border-purple-500/20' : 'bg-primary/5 border-primary/20'
+                  : isPurple ? 'bg-purple-500/5 border-purple-500/20' : isOrange ? 'bg-orange-500/5 border-orange-500/20' : 'bg-primary/5 border-primary/20'
                   }`}>
                   <div className="flex items-start gap-4">
                     <span className="text-2xl mt-0.5">{info.emoji}</span>

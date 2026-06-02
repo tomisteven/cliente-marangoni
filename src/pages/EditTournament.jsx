@@ -132,6 +132,7 @@ const EditTournament = () => {
                 <option value="grupos_+_eliminacion">Grupos + Eliminación</option>
                 <option value="eliminacion_directa_perdedores">Eliminación Directa + Perdedores</option>
                 <option value="grupos_1y2_eliminacion">Zona de grupos + 1º y 2º + eliminación directa</option>
+                <option value="eliminacion_directa">Eliminación Directa (Cruces manuales)</option>
               </select>
             </div>
 

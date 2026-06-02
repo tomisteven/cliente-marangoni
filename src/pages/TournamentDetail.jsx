@@ -44,9 +44,12 @@ const TournamentDetail = () => {
         const hasGroupMatches = mRes.data.data.some(m => m.grupo);
         const hasBracket = mRes.data.data.some(m => !m.grupo);
         const isManualZones = ['eliminacion_directa_perdedores', 'grupos_1y2_eliminacion'].includes(tRes.data.data.formato);
+        const isDirectElim = tRes.data.data.formato === 'eliminacion_directa';
         const estado = tRes.data.data.estado;
         
-        if (isManualZones && (estado === 'inscripcion' || (estado === 'en_curso' && !hasGroupMatches))) {
+        if (isDirectElim) {
+          setActiveTab('cuadro');
+        } else if (isManualZones && (estado === 'inscripcion' || (estado === 'en_curso' && !hasGroupMatches))) {
           setActiveTab('zonas');
         } else if (hasBracket) {
           setActiveTab('cuadro');
